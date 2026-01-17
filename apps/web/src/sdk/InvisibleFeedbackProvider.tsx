@@ -36,6 +36,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { ingestSignal } from './signalAggregator';
+import { IFEDevPanel } from '@/components/dev/IFEDevPanel';
+
 
 type EmotionState = {
   frustration: number;
@@ -61,6 +64,10 @@ export const InvisibleFeedbackProvider = ({
 }) => {
   const [consentGiven, setConsentGiven] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [signalCount, setSignalCount] = useState(0);
+  const [aggregationCount, setAggregationCount] = useState(0);
+  const [lastInsight, setLastInsight] = useState<any | null>(null);
+
   const emotionRef = useRef<EmotionState>({
     frustration: 0,
     engagement: 0,
@@ -131,17 +138,41 @@ export const InvisibleFeedbackProvider = ({
       };
 
       // TODO: replace with backend POST
-      console.log('[IFE EVENT]', payload);
+      const insights = ingestSignal({
+        timestamp: payload.timestamp,
+        route: payload.route,
+        emotion: payload.emotion,
+        interactionType: 'scroll', // simulate for now
+    });
+
+    // DEV METRICS
+    setSignalCount((c) => c + 1);
+    setAggregationCount((c) => c + insights.length);
+    setLastInsight(insights.at(-1) ?? null);
+
+    if (insights.length > 0) {
+        console.log('[IFE INSIGHTS]', insights);
+    }
+
     }, 5000);
 
     return () => clearInterval(interval);
   }, [consentGiven, sessionId]);
 
-  return (
+  return ( // is this the return stuff that i replace?
     <FeedbackContext.Provider
       value={{ consentGiven, grantConsent, revokeConsent, sessionId }}
     >
       {children}
+          {process.env.NODE_ENV === 'development' && (
+      <IFEDevPanel
+        sessionId={sessionId}
+        signalCount={ signalCount }
+        aggregationCount={ aggregationCount }
+        lastInsight={ lastInsight }
+        consentGiven={ consentGiven }
+      />
+    )}
     </FeedbackContext.Provider>
   );
 };
