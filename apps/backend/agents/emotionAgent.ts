@@ -15,27 +15,22 @@
  * Example:
  * "User showing prolonged confusion on checkout page"
  */
-
-import { subscribe, publish } from './solaceClient.js';
-import type { AggregatedInsight, AgentEvent } from './types.js';
+import { subscribe, publish } from './solaceClients.js';
+import { parseSolaceMessage} from './solaceHelpers.js';
+import type { RawSignal } from './solaceHelpers.js';
 
 export function startEmotionAgent() {
-  subscribe('ife/insight/aggregated', (insight: AggregatedInsight) => {
-    if (
-      insight.type === 'FRUSTRATION_SPIKE' ||
-      insight.type === 'CONFUSION_CLUSTER'
-    ) {
-      const event: AgentEvent = {
-        timestamp: Date.now(),
-        sourceAgent: 'emotionAgent',
-        payload: {
-          warning: 'Sustained negative emotional pattern detected',
-          insight,
-        },
-      };
+  subscribe('ife/raw/signal', (msg) => {
+    const signal: RawSignal = parseSolaceMessage<RawSignal>(msg);
+    console.log('[EmotionAgent] received raw signal:', signal);
 
-      publish('ife/agent/emotion', event);
-    }
+    publish('ife/agent/emotion', {
+      sessionId: signal.sessionId ?? 'demo-session',
+      route: signal.route,
+      emotion: signal.emotion,
+      severity: signal.emotion.frustration > 0.7 ? 'high' : 'normal',
+      timestamp: Date.now(),
+    });
   });
 
   console.log('[EmotionAgent] started');

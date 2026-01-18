@@ -16,7 +16,7 @@
  * "500 error correlates with 42% frustration spike"
  */
 
-import { subscribe, publish } from './solaceClient.js';
+import { subscribe, publish } from './solaceClients.js';
 import type { AggregatedInsight, AgentEvent } from './types.js';
 
 export function startContextAgent() {

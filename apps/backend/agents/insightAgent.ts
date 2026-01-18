@@ -15,24 +15,24 @@
  * Optional:
  * - LLM-powered summarization
  */
-
-import { subscribe, publish } from './solaceClient.js';
-import type { AgentEvent } from './types.js';
+import { subscribe, publish } from './solaceClients.js';
+import type { EmotionEvent } from './solaceHelpers.js';
+import { parseSolaceMessage } from './solaceHelpers.js';
 
 export function startInsightAgent() {
-  const handler = (event: AgentEvent) => {
-    const summary = {
+  subscribe('ife/agent/emotion', (msg) => {
+    const emotion: EmotionEvent = parseSolaceMessage<EmotionEvent>(msg);
+    console.log('[InsightAgent] received emotion:', emotion);
+
+    const insight = {
+      sessionId: emotion.sessionId,
+      insight: emotion.severity === 'high' ? 'User likely frustrated' : 'User engagement normal',
+      confidence: emotion.severity === 'high' ? 0.9 : 0.6,
       timestamp: Date.now(),
-      insight: `[${event.sourceAgent}] ${event.payload.message ?? 'New insight generated'}`,
-      details: event.payload,
     };
 
-    publish('ife/agent/summary', summary);
-  };
-
-  subscribe('ife/agent/emotion', handler);
-  subscribe('ife/agent/context', handler);
-  subscribe('ife/agent/ux-friction', handler);
+    publish('ife/insight/final', insight);
+  });
 
   console.log('[InsightAgent] started');
 }

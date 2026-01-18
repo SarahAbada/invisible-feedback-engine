@@ -9,5 +9,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.0.9"
+  },
+  "dependencies": {
+    "@shadcn/ui": "^0.0.4",
+    "solclientjs": "^10.18.2"
+  }
 }

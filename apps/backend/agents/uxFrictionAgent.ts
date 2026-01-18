@@ -16,7 +16,7 @@
  * "Search bar causes frustration after 3 failed attempts"
  */
 
-import { subscribe, publish } from './solaceClient.js';
+import { subscribe, publish } from './solaceClients.js';
 import type { AggregatedInsight, AgentEvent } from './types.js';
 
 export function startUXFrictionAgent() {
