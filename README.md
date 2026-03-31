@@ -1,7 +1,7 @@
 # Invisible Feedback Engine (IFE)
 
 > Passive, real-time UX analytics via event-driven multi-agent architecture.
-> Built at uOttaHack 8 in 24 hours.
+> Built at uOttaHack 8 in 48 hours.
 
 ## What it does
 
